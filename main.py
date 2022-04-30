@@ -15,7 +15,7 @@ from machine import deepsleep
 #esp.osdebug(None)
 
 
-devid = 12345
+devid = 1234
 
 ssid = 'NCC'
 password = 'password'
@@ -35,8 +35,10 @@ if roms:
     except:
         print("1w-err")        
 
+wdt=machine.WDT(timeout=9000)
 
 blue_led = machine.Pin(2, machine.Pin.OUT)
+blue_led.value(0)
 timeout = 0
 while (timeout < 4000) and (station.isconnected() == False):
     timeout = timeout + 20
@@ -51,15 +53,18 @@ if station.isconnected() == True:
     if roms:    
         try:
             tt = ds.read_temp(roms[0])
-            reqtt = "&t="+str(tt)    
+            reqtt = "&temp="+str(tt)    
             print("Temp: " + str(tt)) 
         except:
             print("1w-err")            
     timestamp = time.time_ns()    
-    my_request =  "http://192.168.88.173/index.html?i="+str(devid)+"&s="+str(timestamp)+reqtt;
-    response = urequests.get(my_request)
-    print(response)  
-print(timestamp)
+    try:
+        my_request =  "http://192.168.88.174/data.html?comm=2&id="+str(devid)+"&time="+str(timestamp)+reqtt;
+        response = urequests.get(my_request)
+        print(response)  
+    except:
+        print("No server response")
+#print(timestamp)
 # put the device to sleep
 machine.deepsleep(7000)
 
