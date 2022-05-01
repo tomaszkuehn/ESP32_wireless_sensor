@@ -13,7 +13,19 @@ import network
 from machine import deepsleep
 #import esp
 #esp.osdebug(None)
+import ujson
 
+
+rtc = machine.RTC()
+r = rtc.memory()
+rtc.memory(b'N')
+rtcm = r.decode('ASCII')
+if rtcm == 'N': #normal operation
+    print("Wake up normally")
+else:
+    #wdt reboot
+    print("Detected WDT reboot")
+    machine.deepsleep(11000)
 
 devid = 1234
 
@@ -35,7 +47,6 @@ if roms:
     except:
         print("1w-err")        
 
-wdt=machine.WDT(timeout=9000)
 
 blue_led = machine.Pin(2, machine.Pin.OUT)
 blue_led.value(0)
@@ -44,6 +55,8 @@ while (timeout < 4000) and (station.isconnected() == False):
     timeout = timeout + 20
     time.sleep_ms(20)
 print(timeout)    
+
+wdt=machine.WDT(timeout=4000)
 
 if station.isconnected() == True:
     blue_led.value(1)
@@ -61,11 +74,11 @@ if station.isconnected() == True:
     try:
         my_request =  "http://192.168.88.174/data.html?comm=2&id="+str(devid)+"&time="+str(timestamp)+reqtt;
         response = urequests.get(my_request)
-        print(response)  
+        print(response) 
     except:
         print("No server response")
 #print(timestamp)
 # put the device to sleep
-machine.deepsleep(7000)
+machine.deepsleep(10000)
 
 
