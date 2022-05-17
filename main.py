@@ -16,6 +16,7 @@ from machine import deepsleep
 import ujson
 
 
+wdt=machine.WDT(timeout=14000)
 rtc = machine.RTC()
 r = rtc.memory()
 rtc.memory(b'N')
@@ -25,7 +26,7 @@ if rtcm == 'N': #normal operation
 else:
     #wdt reboot
     print("Detected WDT reboot")
-    machine.deepsleep(11000)
+    #machine.deepsleep(3000)
 
 devid = 1234
 
@@ -50,13 +51,13 @@ if roms:
 
 blue_led = machine.Pin(2, machine.Pin.OUT)
 blue_led.value(0)
-timeout = 0
-while (timeout < 4000) and (station.isconnected() == False):
-    timeout = timeout + 20
-    time.sleep_ms(20)
-print(timeout)    
+time.sleep_ms(800)  #1-wire delay
 
-wdt=machine.WDT(timeout=4000)
+#wdt=machine.WDT(timeout=9000)
+
+while station.isconnected() == False:
+    time.sleep_ms(20)
+
 
 if station.isconnected() == True:
     blue_led.value(1)
@@ -70,15 +71,18 @@ if station.isconnected() == True:
             print("Temp: " + str(tt)) 
         except:
             print("1w-err")            
-    timestamp = time.time_ns()    
+    timestamp = 0 #time.time_ns()    
     try:
-        my_request =  "http://192.168.88.174/data.html?comm=2&id="+str(devid)+"&time="+str(timestamp)+reqtt;
+        my_request =  "http://192.168.88.174/?comm=2&id="+str(devid)+"&time="+str(timestamp)+reqtt 
+        blue_led.value(0)
         response = urequests.get(my_request)
-        print(response) 
+        print(response)
     except:
         print("No server response")
+    
+station.active(True)
 #print(timestamp)
 # put the device to sleep
-machine.deepsleep(10000)
-
+#machine.deepsleep(5000)
+time.sleep(10)  #wait for wdt
 
